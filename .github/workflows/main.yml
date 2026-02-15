@@ -19,7 +19,7 @@ permissions:
 
 env:
   PYTHON_VERSION: '3.11'
-  TARGET_URL: 'https://www.threads.com/?hl=ko'
+  TARGET_URL: 'https://www.threads.com/@seolemi?hl=ko'
   REPORT_URL: 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}'
 
 jobs:
