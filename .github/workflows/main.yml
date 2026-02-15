@@ -48,7 +48,7 @@ jobs:
       - name: Get Playwright version for cache key
         id: playwright-version
         run: |
-          PLAYWRIGHT_VERSION=$(python -c "import playwright; print(playwright.__version__)")
+          PLAYWRIGHT_VERSION=$(pip show playwright | grep Version | cut -d' ' -f2)
           echo "version=$PLAYWRIGHT_VERSION" >> $GITHUB_OUTPUT
       
       - name: Cache Playwright browsers
@@ -56,13 +56,15 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
       
-      - name: Install Playwright (no cache)
+      - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: python -m playwright install chromium --with-deps
+        run: |
+          pip install playwright
+          python -m playwright install chromium --with-deps
       
-      - name: Install Playwright system deps (cache hit)
+      - name: Install Playwright system deps only (cache hit)
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: python -m playwright install-deps chromium
       
