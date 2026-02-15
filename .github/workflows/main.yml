@@ -9,7 +9,7 @@ on:
       full_scrape:
         description: 'Run full scrape (default: incremental)'
         required: false
-        default: false
+        default: 'false'
         type: boolean
 
 permissions:
@@ -19,7 +19,7 @@ permissions:
 
 env:
   PYTHON_VERSION: '3.11'
-  TARGET_URL: 'https://www.threads.com/@claudeai'
+  TARGET_URL: 'https://www.threads.com/?hl=ko'
   REPORT_URL: 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}'
 
 jobs:
@@ -197,23 +197,27 @@ jobs:
         with:
           name: scrape-results-${{ github.run_number }}
           path: ./data
-
-      - name: Analyze with Claude
-        uses: anthropics/claude-code-action@v1
-        env:
-          # Hooks에서 Slack 전송 시 사용할 환경변수 주입
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # --dangerously-skip-permissions: 무인 실행을 위해 필수 
-          claude_args: "--dangerously-skip-permissions  --output-format json"
-          prompt: >
-           Analyze the scraped Threads.com data in ./data/output/
+          node-version: '20'
+      
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code@latest
+      
+      - name: Analyze with Claude
+        run: |
+          claude -p "
+            Analyze the scraped Threads.com data in ./data/output/
             Generate a summary report including:
             - Top trending topics
             - Content themes
             - Notable posts or patterns
             Save analysis to ./data/reports/ai_analysis.md
+          " --output-format json --max-turns 5
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       
       - name: Upload AI analysis
         uses: actions/upload-artifact@v4
