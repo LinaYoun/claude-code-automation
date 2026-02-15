@@ -1,0 +1,11 @@
+# Web Scraping
+playwright>=1.40.0
+beautifulsoup4>=4.12.0
+parsel>=1.8.0
+nested-lookup>=0.2.25
+
+# Report Generation
+jinja2>=3.1.0
+
+# Utilities
+httpx>=0.25.0
